@@ -35,7 +35,8 @@ app.post("/render", async (req, res) => {
       return acc + d;
     }, 0);
 
-    const entryPoint = path.join(process.cwd(), "src/index.ts");
+   const entryPoint = path.join(process.cwd(), "index.ts");
+
 
     const serveUrl = await bundle({ entryPoint });
 
