@@ -37,7 +37,30 @@ app.post("/render", async (req, res) => {
 console.log("[DEBUG] cwd:", process.cwd());
 console.log("[DEBUG] entryPoint:", entryPoint);
 
-   const entryPoint = path.join(process.cwd(), "index.ts");
+  const cwd = process.cwd();
+
+const candidates = [
+  path.join(cwd, "src", "index.ts"),
+  path.join(cwd, "src", "index.tsx"),
+  path.join(cwd, "index.ts"),
+  path.join(cwd, "index.tsx"),
+];
+
+const entryPoint = candidates.find((p) => fs.existsSync(p));
+
+console.log("[DEBUG] cwd:", cwd);
+console.log("[DEBUG] candidates:", candidates);
+console.log("[DEBUG] chosen entryPoint:", entryPoint);
+
+if (!entryPoint) {
+  return res.status(500).json({
+    ok: false,
+    error: "entrypoint_not_found",
+    message: "Não encontrei index.ts/index.tsx em src/ nem na raiz. Verifique a pasta do Remotion.",
+    candidates,
+    cwd,
+  });
+}
 
 
     const serveUrl = await bundle({ entryPoint });
