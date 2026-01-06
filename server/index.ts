@@ -34,6 +34,8 @@ app.post("/render", async (req, res) => {
       const d = Math.max(1, Math.round((Number(s.duration_s || 2)) * fps));
       return acc + d;
     }, 0);
+console.log("[DEBUG] cwd:", process.cwd());
+console.log("[DEBUG] entryPoint:", entryPoint);
 
    const entryPoint = path.join(process.cwd(), "index.ts");
 
