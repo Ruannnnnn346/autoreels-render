@@ -14,8 +14,17 @@ fs.mkdirSync(rendersDir, { recursive: true });
 app.use("/renders", express.static(rendersDir));
 
 // Health
+const BUILD_ID = "BUILD_2026_01_06_B";
+
 app.get("/", (req, res) => {
-  res.json({ ok: true, service: "autoreels-render", message: "online" });
+  res.json({
+    ok: true,
+    service: "autoreels-render",
+    message: "online",
+    build: BUILD_ID
+  });
+});
+
 });
 
 // Render real
