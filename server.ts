@@ -71,3 +71,39 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Remotion render server running on port ${PORT}`);
 });
+// Após renderizar o vídeo com sucesso, adicione isso:
+if (webhookUrl && webhookSecret) {
+  try {
+    await fetch(webhookUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-webhook-secret': webhookSecret
+      },
+      body: JSON.stringify({
+        projectId,
+        videoUrl: outputUrl, // URL do vídeo gerado
+        status: 'completed'
+      })
+    });
+    console.log('Webhook called successfully');
+  } catch (webhookError) {
+    console.error('Failed to call webhook:', webhookError);
+  }
+}
+
+// Em caso de erro na renderização:
+if (webhookUrl && webhookSecret) {
+  await fetch(webhookUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-webhook-secret': webhookSecret
+    },
+    body: JSON.stringify({
+      projectId,
+      status: 'failed',
+      error: errorMessage
+    })
+  });
+}
