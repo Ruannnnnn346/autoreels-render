@@ -1,44 +1,63 @@
-import { AbsoluteFill, Img, useCurrentFrame } from 'remotion';
+import React from 'react';
+import { AbsoluteFill, Sequence, useCurrentFrame } from 'remotion';
 
-interface Scene {
+interface SceneData {
   type: string;
   content: string;
   image_url?: string | null;
 }
 
-export interface VideoProps {
-  scenes: Scene[];
+interface VideoProps {
+  scenes: SceneData[];
 }
 
-export const Video = ({ scenes }: VideoProps) => {
+export const Video: React.FC<VideoProps> = ({ scenes }) => {
   const frame = useCurrentFrame();
-  const sceneIndex = Math.min(Math.floor(frame / 90), Math.max(0, scenes.length - 1));
-  const scene = scenes[sceneIndex];
-
-  if (!scene) {
-    return (
-      <AbsoluteFill style={{ backgroundColor: '#000', justifyContent: 'center', alignItems: 'center' }}>
-        <div style={{ color: 'white', fontSize: 48 }}>Carregando...</div>
-      </AbsoluteFill>
-    );
-  }
+  const framesPerScene = 150; // 5 segundos por cena a 30fps
 
   return (
     <AbsoluteFill style={{ backgroundColor: '#000' }}>
-      {scene.image_url && (
-        <Img src={scene.image_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-      )}
-      <div style={{
-        position: 'absolute',
-        bottom: 100,
-        left: 40,
-        right: 40,
-        color: 'white',
-        fontSize: 48,
-        textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
-      }}>
-        {scene.content}
-      </div>
+      {scenes.map((scene, index) => (
+        <Sequence
+          key={index}
+          from={index * framesPerScene}
+          durationInFrames={framesPerScene}
+        >
+          <AbsoluteFill
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: 40,
+            }}
+          >
+            {scene.image_url && (
+              <img
+                src={scene.image_url}
+                style={{
+                  width: '100%',
+                  height: '60%',
+                  objectFit: 'cover',
+                  borderRadius: 20,
+                }}
+              />
+            )}
+            <div
+              style={{
+                color: 'white',
+                fontSize: 48,
+                textAlign: 'center',
+                marginTop: 40,
+                fontWeight: 'bold',
+                textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+              }}
+            >
+              {scene.content}
+            </div>
+          </AbsoluteFill>
+        </Sequence>
+      ))}
     </AbsoluteFill>
   );
 };
