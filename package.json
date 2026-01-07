@@ -1,3 +1,26 @@
-"scripts": {
-  "start": "tsx server/index.ts"
+{
+  "name": "remotion-server",
+  "version": "1.0.0",
+  "description": "Servidor Remotion para renderização de vídeos",
+  "main": "server.ts",
+  "scripts": {
+    "start": "npx ts-node server.ts",
+    "build": "npm install"
+  },
+  "dependencies": {
+    "@remotion/bundler": "4.0.232",
+    "@remotion/cli": "4.0.232",
+    "@remotion/renderer": "4.0.232",
+    "express": "^4.21.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "4.0.232"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.5",
+    "@types/react": "^18.3.18",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
+  }
 }
