@@ -2,13 +2,31 @@ import express from 'express';
 import { bundle } from '@remotion/bundler';
 import { renderMedia, selectComposition } from '@remotion/renderer';
 import path from 'path';
+import fs from 'fs';
 
 const app = express();
 app.use(express.json());
 
+// Manual CORS headers instead of cors package
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', compositions: ['MainVideo'] });
+});
+
 app.post('/render', async (req, res) => {
   try {
     const { scenes } = req.body;
+
+    console.log('Received render request with scenes:', JSON.stringify(scenes, null, 2));
 
     const bundleLocation = await bundle({
       entryPoint: path.resolve('./src/index.ts'),
@@ -31,14 +49,25 @@ app.post('/render', async (req, res) => {
       inputProps: { scenes },
     });
 
-    res.json({ success: true, videoUrl: outputLocation });
+    // Read the file and convert to base64 or return URL
+    const videoBuffer = fs.readFileSync(outputLocation);
+    const base64Video = videoBuffer.toString('base64');
+
+    // Clean up the file
+    fs.unlinkSync(outputLocation);
+
+    res.json({
+      success: true,
+      videoUrl: `data:video/mp4;base64,${base64Video}`,
+    });
   } catch (error) {
     console.error('Render error:', error);
-    res.status(500).json({ error: error.message });
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    res.status(500).json({ error: `Render failed: ${errorMessage}` });
   }
 });
 
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
-  console.log(`Remotion server listening on port ${port}`);
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Remotion render server running on port ${PORT}`);
 });
