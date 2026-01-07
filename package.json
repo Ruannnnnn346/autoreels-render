@@ -2,8 +2,12 @@
   "name": "remotion-render-server",
   "version": "1.0.0",
   "main": "server.ts",
+  {
   "scripts": {
-    "start": "npx ts-node server.ts",
+    "start": "npx ts-node server.ts"
+  }
+}
+
     "dev": "npx ts-node-dev server.ts"
   },
   "dependencies": {
