@@ -1,70 +1,84 @@
-import React from "react";
-import { AbsoluteFill, Img, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, Img, Sequence, useCurrentFrame, interpolate } from "remotion";
 
-type Scene = {
-  duration_s?: number;
-  text?: string;
+interface Scene {
+  content: string;
   image_url?: string;
-};
+}
 
-export const Video: React.FC<{ scenes: Scene[] }> = ({ scenes }) => {
+interface VideoSceneProps {
+  scenes: Scene[];
+}
+
+const SingleScene: React.FC<{ scene: Scene }> = ({ scene }) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-
-  // calcula em que cena o frame atual está
-  let start = 0;
-  let currentIndex = 0;
-  for (let i = 0; i < scenes.length; i++) {
-    const d = Math.max(1, Math.round((Number(scenes[i].duration_s ?? 2)) * fps));
-    if (frame >= start && frame < start + d) {
-      currentIndex = i;
-      break;
-    }
-    start += d;
-  }
-
-  const scene = scenes[currentIndex] ?? {};
-  const localFrame = frame - start;
-
-  const fadeIn = interpolate(localFrame, [0, 10], [0, 1], { extrapolateRight: "clamp" });
-  const fadeOut = interpolate(localFrame, [Math.max(0, (Number(scene.duration_s ?? 2) * fps) - 10), Number(scene.duration_s ?? 2) * fps], [1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
-
-  const opacity = Math.min(fadeIn, fadeOut);
+  
+  const opacity = interpolate(frame, [0, 15, 75, 90], [0, 1, 1, 0], {
+    extrapolateRight: "clamp",
+  });
 
   return (
-    <AbsoluteFill style={{ backgroundColor: "black" }}>
-      {scene.image_url ? (
+    <AbsoluteFill
+      style={{
+        backgroundColor: "#1a1a2e",
+        justifyContent: "center",
+        alignItems: "center",
+        opacity,
+      }}
+    >
+      {scene.image_url && (
         <Img
           src={scene.image_url}
           style={{
+            position: "absolute",
             width: "100%",
             height: "100%",
             objectFit: "cover",
-            opacity,
+            opacity: 0.3,
           }}
         />
-      ) : (
-        <AbsoluteFill style={{ justifyContent: "center", alignItems: "center" }}>
-          <div style={{ color: "white", fontSize: 64, fontWeight: 800, opacity }}>
-            Sem imagem
-          </div>
-        </AbsoluteFill>
       )}
-
-      <AbsoluteFill style={{ justifyContent: "flex-end", padding: 80 }}>
-        <div
+      <div
+        style={{
+          padding: "40px",
+          textAlign: "center",
+          zIndex: 1,
+        }}
+      >
+        <p
           style={{
+            fontSize: "48px",
             color: "white",
-            fontSize: 72,
-            fontWeight: 900,
-            lineHeight: 1.05,
-            textShadow: "0 6px 20px rgba(0,0,0,0.7)",
-            opacity,
+            fontFamily: "Arial, sans-serif",
+            lineHeight: 1.4,
+            textShadow: "2px 2px 4px rgba(0,0,0,0.8)",
+            maxWidth: "900px",
           }}
         >
-          {scene.text ?? ""}
-        </div>
+          {scene.content}
+        </p>
+      </div>
+    </AbsoluteFill>
+  );
+};
+
+export const VideoScene: React.FC<VideoSceneProps> = ({ scenes }) => {
+  const framesPerScene = 90; // 3 segundos a 30fps
+
+  if (!scenes || scenes.length === 0) {
+    return (
+      <AbsoluteFill style={{ backgroundColor: "#1a1a2e", justifyContent: "center", alignItems: "center" }}>
+        <p style={{ color: "white", fontSize: "32px" }}>No scenes provided</p>
       </AbsoluteFill>
+    );
+  }
+
+  return (
+    <AbsoluteFill>
+      {scenes.map((scene, index) => (
+        <Sequence key={index} from={index * framesPerScene} durationInFrames={framesPerScene}>
+          <SingleScene scene={scene} />
+        </Sequence>
+      ))}
     </AbsoluteFill>
   );
 };
