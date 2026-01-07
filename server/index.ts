@@ -4,30 +4,25 @@ import fs from "fs";
 import { bundle } from "@remotion/bundler";
 import { renderMedia, selectComposition } from "@remotion/renderer";
 
+const BUILD_ID = "BUILD_2026_01_06_C";
+
 const app = express();
 app.use(express.json({ limit: "20mb" }));
 
-// Diretórios para salvar renders (MVP)
 const publicDir = path.join(process.cwd(), "public");
 const rendersDir = path.join(publicDir, "renders");
 fs.mkdirSync(rendersDir, { recursive: true });
 app.use("/renders", express.static(rendersDir));
-
-// Health
-const BUILD_ID = "BUILD_2026_01_06_B";
 
 app.get("/", (req, res) => {
   res.json({
     ok: true,
     service: "autoreels-render",
     message: "online",
-    build: BUILD_ID
+    build: BUILD_ID,
   });
 });
 
-});
-
-// Render real
 app.post("/render", async (req, res) => {
   try {
     const timeline = req.body?.timeline;
@@ -46,7 +41,6 @@ app.post("/render", async (req, res) => {
       return acc + d;
     }, 0);
 
-    // ✅ Detectar entryPoint sem depender do cwd do Render
     const cwd = process.cwd();
     const candidates = [
       path.join(cwd, "src", "index.ts"),
@@ -54,11 +48,10 @@ app.post("/render", async (req, res) => {
       path.join(cwd, "index.ts"),
       path.join(cwd, "index.tsx"),
     ];
-
     const entryPoint = candidates.find((p) => fs.existsSync(p));
 
+    console.log("[DEBUG] build:", BUILD_ID);
     console.log("[DEBUG] cwd:", cwd);
-    console.log("[DEBUG] candidates:", candidates);
     console.log("[DEBUG] chosen entryPoint:", entryPoint);
 
     if (!entryPoint) {
@@ -72,25 +65,19 @@ app.post("/render", async (req, res) => {
       });
     }
 
-    // Bundle do Remotion
     const serveUrl = await bundle({ entryPoint });
 
-    // Seleciona composição
     const composition = await selectComposition({
       serveUrl,
       id: "AutoReels",
       inputProps: { scenes: timeline.scenes },
     });
 
-    // Renderiza MP4
     const outName = `render_${Date.now()}.mp4`;
     const outPath = path.join(rendersDir, outName);
 
     await renderMedia({
-      composition: {
-        ...composition,
-        durationInFrames: totalFrames,
-      },
+      composition: { ...composition, durationInFrames: totalFrames },
       serveUrl,
       codec: "h264",
       outputLocation: outPath,
@@ -116,5 +103,7 @@ app.post("/render", async (req, res) => {
   }
 });
 
-const port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`Render server on :${port}`));
+const port = Number(process.env.PORT || 3000);
+app.listen(port, () => {
+  console.log(`Render server on :${port} - build=${BUILD_ID}`);
+});
