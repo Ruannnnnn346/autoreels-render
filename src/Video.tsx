@@ -1,5 +1,4 @@
-import React from 'react';
-import { AbsoluteFill, Img, useCurrentFrame, interpolate } from 'remotion';
+import { AbsoluteFill, Img, useCurrentFrame } from 'remotion';
 
 interface Scene {
   type: string;
@@ -7,14 +6,22 @@ interface Scene {
   image_url?: string | null;
 }
 
-interface VideoProps {
+export interface VideoProps {
   scenes: Scene[];
 }
 
-export const Video: React.FC<VideoProps> = ({ scenes }) => {
+export const Video = ({ scenes }: VideoProps) => {
   const frame = useCurrentFrame();
-  const sceneIndex = Math.min(Math.floor(frame / 90), scenes.length - 1);
-  const scene = scenes[sceneIndex] || { type: 'hook', content: 'Carregando...' };
+  const sceneIndex = Math.min(Math.floor(frame / 90), Math.max(0, scenes.length - 1));
+  const scene = scenes[sceneIndex];
+
+  if (!scene) {
+    return (
+      <AbsoluteFill style={{ backgroundColor: '#000', justifyContent: 'center', alignItems: 'center' }}>
+        <div style={{ color: 'white', fontSize: 48 }}>Carregando...</div>
+      </AbsoluteFill>
+    );
+  }
 
   return (
     <AbsoluteFill style={{ backgroundColor: '#000' }}>
