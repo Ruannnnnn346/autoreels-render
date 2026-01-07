@@ -1,84 +1,37 @@
-import { AbsoluteFill, Img, Sequence, useCurrentFrame, interpolate } from "remotion";
+import React from 'react';
+import { AbsoluteFill, Img, useCurrentFrame, interpolate } from 'remotion';
 
 interface Scene {
+  type: string;
   content: string;
-  image_url?: string;
+  image_url?: string | null;
 }
 
-interface VideoSceneProps {
+interface VideoProps {
   scenes: Scene[];
 }
 
-const SingleScene: React.FC<{ scene: Scene }> = ({ scene }) => {
+export const Video: React.FC<VideoProps> = ({ scenes }) => {
   const frame = useCurrentFrame();
-  
-  const opacity = interpolate(frame, [0, 15, 75, 90], [0, 1, 1, 0], {
-    extrapolateRight: "clamp",
-  });
+  const sceneIndex = Math.min(Math.floor(frame / 90), scenes.length - 1);
+  const scene = scenes[sceneIndex] || { type: 'hook', content: 'Carregando...' };
 
   return (
-    <AbsoluteFill
-      style={{
-        backgroundColor: "#1a1a2e",
-        justifyContent: "center",
-        alignItems: "center",
-        opacity,
-      }}
-    >
+    <AbsoluteFill style={{ backgroundColor: '#000' }}>
       {scene.image_url && (
-        <Img
-          src={scene.image_url}
-          style={{
-            position: "absolute",
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            opacity: 0.3,
-          }}
-        />
+        <Img src={scene.image_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
       )}
-      <div
-        style={{
-          padding: "40px",
-          textAlign: "center",
-          zIndex: 1,
-        }}
-      >
-        <p
-          style={{
-            fontSize: "48px",
-            color: "white",
-            fontFamily: "Arial, sans-serif",
-            lineHeight: 1.4,
-            textShadow: "2px 2px 4px rgba(0,0,0,0.8)",
-            maxWidth: "900px",
-          }}
-        >
-          {scene.content}
-        </p>
+      <div style={{
+        position: 'absolute',
+        bottom: 100,
+        left: 40,
+        right: 40,
+        color: 'white',
+        fontSize: 48,
+        textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+      }}>
+        {scene.content}
       </div>
-    </AbsoluteFill>
-  );
-};
-
-export const VideoScene: React.FC<VideoSceneProps> = ({ scenes }) => {
-  const framesPerScene = 90; // 3 segundos a 30fps
-
-  if (!scenes || scenes.length === 0) {
-    return (
-      <AbsoluteFill style={{ backgroundColor: "#1a1a2e", justifyContent: "center", alignItems: "center" }}>
-        <p style={{ color: "white", fontSize: "32px" }}>No scenes provided</p>
-      </AbsoluteFill>
-    );
-  }
-
-  return (
-    <AbsoluteFill>
-      {scenes.map((scene, index) => (
-        <Sequence key={index} from={index * framesPerScene} durationInFrames={framesPerScene}>
-          <SingleScene scene={scene} />
-        </Sequence>
-      ))}
     </AbsoluteFill>
   );
 };
