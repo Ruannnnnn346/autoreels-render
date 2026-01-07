@@ -35,7 +35,7 @@ app.post('/render', async (req, res) => {
     // Select the composition - IMPORTANTE: usar "AutoReelsVideo"
     const composition = await selectComposition({
       serveUrl: bundleLocation,
-      id: 'AutoReelsVideo', // <-- Certifique-se que este ID corresponde ao Root.tsx
+      id: 'MainVideo', // <-- Certifique-se que este ID corresponde ao Root.tsx
       inputProps: { scenes },
     });
 
