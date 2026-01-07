@@ -5,7 +5,7 @@ import { Video } from './Video';
 export const RemotionRoot: React.FC = () => {
   return (
     <Composition
-      id="AutoReelsVideo"
+      id="MainVideo"
       component={Video}
       durationInFrames={900}
       fps={30}
