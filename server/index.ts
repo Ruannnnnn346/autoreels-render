@@ -35,7 +35,8 @@ app.post("/render", async (req, res) => {
     }, 0);
 
     // ✅ entryPoint DO REMOTION (NÃO É O SERVER)
-    const entryPoint = path.join(process.cwd(), "src", "index.ts");
+    const entryPoint: path.join(process.cwd(), "src/index.ts")  // ✅ CORRETO
+
     if (!fs.existsSync(entryPoint)) {
       return res.status(500).json({
         ok: false,
